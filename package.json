@@ -1,0 +1,29 @@
+{
+  "name": "react-native-rnrecyclerviews",
+  "version": "1.0.8",
+  "description": "RecyclerView",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "recyclerview",
+    "react-native"
+  ],
+  "author": "guoheli",
+  "license": "MIT",
+  "peerDependencies": {
+    "prop-types": "*",
+    "react": "*",
+    "react-native": "*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/heliguo/RNRecyclerView.git"
+  },
+  "bugs": {
+    "url": "https://github.com/heliguo/RNRecyclerView/issues"
+  },
+  "homepage": "https://github.com/heliguo/RNRecyclerView#readme",
+  "devDependencies": {}
+}
