@@ -39,14 +39,15 @@ public class RecyclerViewBackedScrollViewManager extends ViewGroupManager<Recycl
     public static final int COMMAND_SCROLL_TO_INDEX = 4;
     public static final int COMMAND_NOTIFY_ITEM_MOVED = 5;
     public static final int COMMAND_LAYOUT_MANAGER = 6;
+    public static final int COMMAND_INVERTED = 7;
 
     public static final String LINEAR = "LINEARLAYOUTMANAGER";//(context)
     public static final String GRID = "GRIDLAYOUTMANAGER";//(context, spanCount)
     public static final String STAGGERED = "STAGGEREDGRIDLAYOUTMANAGER";//( spanCount,orientation/*HORIZONTAL=0,VERTICAL = 1*/)
 
-    public static final int LAYOUT_MANAGER_LINEAR = 100;
-    public static final int LAYOUT_MANAGER_GRID = 101;
-    public static final int LAYOUT_MANAGER_STAGGERED = 102;
+    public static final int LAYOUT_MANAGER_LINEAR = 0;
+    public static final int LAYOUT_MANAGER_GRID = 1;
+    public static final int LAYOUT_MANAGER_STAGGERED = 2;
 
 
     @NonNull
@@ -63,10 +64,11 @@ public class RecyclerViewBackedScrollViewManager extends ViewGroupManager<Recycl
 
     @Override
     public void addView(RecyclerViewBackedScrollView parent, View child, int index) {
-        Assertions.assertCondition(child instanceof RecyclerViewItemView, "Views attached to RecyclerViewBackedScrollView must be RecyclerViewItemView views.");
-        assert child instanceof RecyclerViewItemView;
-        RecyclerViewItemView item = (RecyclerViewItemView) child;
-        parent.addViewToAdapter(item, index);
+        if (child instanceof BaseView) {
+            BaseView item = (BaseView) child;
+            parent.addViewToAdapter(item, index);
+        }
+
     }
 
     @Override
@@ -97,29 +99,9 @@ public class RecyclerViewBackedScrollViewManager extends ViewGroupManager<Recycl
     /**
      * setLayoutManager
      */
-    @ReactProp(name = "layoutManager")
-    public void setLayoutManager(RecyclerViewBackedScrollView parent, ReadableArray args) {
-        int style = args.getInt(0);
-        if (style == LAYOUT_MANAGER_LINEAR) {
-            parent.setLayoutManager(new LinearLayoutManager(parent.getContext()));
-            if (args.size() > 1) {
-                parent.setLoadMoreCount(args.getInt(1));
-            }
-        } else if (style == LAYOUT_MANAGER_GRID) {
-            int spanCount = args.getInt(1);
-            parent.setLayoutManager(new GridLayoutManager(parent.getContext(), spanCount));
-            if (args.size() > 2) {
-                parent.setLoadMoreCount(args.getInt(2));
-            }
-        } else if (style == LAYOUT_MANAGER_STAGGERED) {
-            int spanCount = args.getInt(1);
-            StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(spanCount, StaggeredGridLayoutManager.VERTICAL);
-            layoutManager.setGapStrategy(StaggeredGridLayoutManager.GAP_HANDLING_NONE);//瀑布流刷新头部空白问题
-            parent.setLayoutManager(layoutManager);
-            if (args.size() > 2) {
-                parent.setLoadMoreCount(args.getInt(2));
-            }
-        }
+    @ReactProp(name = "layoutType")
+    public void setLayoutType(RecyclerViewBackedScrollView parent, ReadableArray args) {
+        setLayoutManager(parent, args);
         parent.setItemAnimator(null);
 
     }
@@ -172,7 +154,8 @@ public class RecyclerViewBackedScrollViewManager extends ViewGroupManager<Recycl
                 "notifyItemMoved", COMMAND_NOTIFY_ITEM_MOVED,
                 "notifyDataSetChanged", COMMAND_NOTIFY_DATASET_CHANGED,
                 "scrollToIndex", COMMAND_SCROLL_TO_INDEX,
-                "layoutManager", COMMAND_LAYOUT_MANAGER
+                "layoutType", COMMAND_LAYOUT_MANAGER,
+                "inverted", COMMAND_INVERTED
         );
     }
 
@@ -240,28 +223,13 @@ public class RecyclerViewBackedScrollViewManager extends ViewGroupManager<Recycl
             }
 
 
-            case COMMAND_LAYOUT_MANAGER://reset layoutManager for resolving the refresh question
-                int style = args.getInt(0);
-                if (style == LAYOUT_MANAGER_LINEAR) {
-                    parent.setLayoutManager(new LinearLayoutManager(parent.getContext()));
-                    if (args.size() > 1) {
-                        parent.setLoadMoreCount(args.getInt(1));
-                    }
-                } else if (style == LAYOUT_MANAGER_GRID) {
-                    int spanCount = args.getInt(1);
-                    parent.setLayoutManager(new GridLayoutManager(parent.getContext(), spanCount));
-                    if (args.size() > 2) {
-                        parent.setLoadMoreCount(args.getInt(2));
-                    }
-                } else if (style == LAYOUT_MANAGER_STAGGERED) {
-                    int spanCount = args.getInt(1);
-                    StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(spanCount, StaggeredGridLayoutManager.VERTICAL);
-                    layoutManager.setGapStrategy(StaggeredGridLayoutManager.GAP_HANDLING_NONE);//瀑布流刷新头部空白问题
-                    parent.setLayoutManager(layoutManager);
-                    if (args.size() > 2) {
-                        parent.setLoadMoreCount(args.getInt(2));
-                    }
-                }
+            case COMMAND_LAYOUT_MANAGER:
+                setLayoutManager(parent, args);
+                return;
+
+            case COMMAND_INVERTED:
+                boolean inverted = args.getBoolean(0);
+                parent.setReverse(inverted);
                 return;
 
             default:
@@ -280,5 +248,29 @@ public class RecyclerViewBackedScrollViewManager extends ViewGroupManager<Recycl
                 .put(ItemTopEvent.EVENT_TOP, MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onTop")))
                 .put(VisibleItemsChangeEvent.EVENT_NAME, MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onVisibleItemsChange")))
                 .build();
+    }
+
+    private void setLayoutManager(RecyclerViewBackedScrollView parent, ReadableArray args) {
+        int style = args.getInt(0);
+        if (style == LAYOUT_MANAGER_LINEAR) {
+            parent.setLayoutManager(new LinearLayoutManager(parent.getContext()));
+            if (args.size() > 1) {
+                parent.setLoadMoreCount(args.getInt(1));
+            }
+        } else if (style == LAYOUT_MANAGER_GRID) {
+            int spanCount = args.getInt(1);
+            parent.setLayoutManager(new GridLayoutManager(parent.getContext(), spanCount));
+            if (args.size() > 2) {
+                parent.setLoadMoreCount(args.getInt(2));
+            }
+        } else if (style == LAYOUT_MANAGER_STAGGERED) {
+            int spanCount = args.getInt(1);
+            StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(spanCount, StaggeredGridLayoutManager.VERTICAL);
+            layoutManager.setGapStrategy(StaggeredGridLayoutManager.GAP_HANDLING_NONE);//瀑布流刷新头部空白问题
+            parent.setLayoutManager(layoutManager);
+            if (args.size() > 2) {
+                parent.setLoadMoreCount(args.getInt(2));
+            }
+        }
     }
 }

@@ -3,18 +3,21 @@ import ReactNative, {requireNativeComponent, StyleSheet, UIManager, View} from '
 import PropTypes from 'prop-types';
 import DataSource from './DataSource';
 import RecyclerViewItem from './RcyclerViewItem';
+import RecyclerViewEmpty from './RcyclerViewEmpty';
+import RecyclerViewHeader from './RcyclerViewHeader';
+import RecyclerViewFooter from './RcyclerViewFooter';
 
 
 export default class RNRecyclerView extends PureComponent {
     static propTypes = {
-        layoutManager: PropTypes.array.isRequired,
+        layoutType: PropTypes.array.isRequired,
         ...View.propTypes,
         renderItem: PropTypes.func,
         dataSource: PropTypes.instanceOf(DataSource),
-        ListHeaderComponent: PropTypes.element,//头
-        ListFooterComponent: PropTypes.element,//尾
-        ListEmptyComponent: PropTypes.element,//空
-        ItemSeparatorComponent: PropTypes.element,//分割
+        inverted: PropTypes.bool,//反转列表（聊天信息）
+        ListHeaderComponent: PropTypes.element,//头（无法在瀑布流中使用）
+        ListFooterComponent: PropTypes.element,//尾（无法在瀑布流中使用）
+        ListEmptyComponent: PropTypes.element,//空布局
         onBottom: PropTypes.func,//滑动到底
         onLoadMore: PropTypes.func,//可用于加载更多回调
         onTop: PropTypes.func,
@@ -22,8 +25,56 @@ export default class RNRecyclerView extends PureComponent {
 
     static defaultProps = {
         dataSource: new DataSource([], (item, i) => i),
+        inverted: false,
     };
 
+    constructor(props) {
+        super(props);
+        const {
+            dataSource,//数据
+        } = this.props;
+
+        dataSource._addListener(this._dataSourceListener);
+
+        this.state = {
+            itemCount: dataSource.size(),
+        };
+
+        this._shouldUpdateAll = true;
+        this._shouldUpdateKeys = [];
+    }
+
+    componentWillMount() {
+    }
+
+    componentWillUnmount() {
+        const {dataSource} = this.props;
+        this.mounted = false;
+        if (dataSource) {
+            dataSource._removeListener(this._dataSourceListener);
+        }
+    }
+
+    componentDidMount() {
+        this.mounted = true;
+    }
+
+    componentWillReceiveProps(nextProps) {
+        const {dataSource} = this.props;
+        if (nextProps.dataSource.size() === 0 && dataSource.size === 0) {
+            return;
+        }
+        if (nextProps.dataSource !== dataSource) {
+            dataSource._removeListener(this._dataSourceListener);
+            nextProps.dataSource._addListener(this._dataSourceListener);
+            this._notifyDataSetChanged(nextProps.dataSource.size());
+        }
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        this._shouldUpdateAll = false;
+        this._shouldUpdateKeys = [];
+    }
 
     _dataSourceListener = {
 
@@ -69,88 +120,33 @@ export default class RNRecyclerView extends PureComponent {
         },
     };
 
-    constructor(props) {
-        super(props);
-        const {
-            dataSource,//数据
-        } = this.props;
-
-        dataSource._addListener(this._dataSourceListener);
-
-        this.state = {
-            itemCount: dataSource.size(),
-        };
-
-        this._shouldUpdateAll = true;
-        this._shouldUpdateKeys = [];
-    }
-
-    componentWillMount() {
-    }
-
-    componentWillUnmount() {
-        const {dataSource} = this.props;
-        this.mounted = false;
-        if (dataSource) {
-            dataSource._removeListener(this._dataSourceListener);
-        }
-    }
-
-    componentDidMount() {
-        this.mounted = true;
-    }
-
-    componentWillReceiveProps(nextProps) {
-        const {dataSource} = this.props;
-        if (nextProps.dataSource !== dataSource) {
-            dataSource._removeListener(this._dataSourceListener);
-            nextProps.dataSource._addListener(this._dataSourceListener);
-            this._notifyDataSetChanged(nextProps.dataSource.size());
-        }
-    }
-
-    componentDidUpdate(prevProps, prevState) {
-        this._shouldUpdateAll = false;
-        this._shouldUpdateKeys = [];
-    }
-
     render() {
         const {
-            layoutManager,
+            inverted,
+            layoutType,
             dataSource,
             renderItem,
             ListHeaderComponent,
             ListFooterComponent,
             ListEmptyComponent,
-            ItemSeparatorComponent,
             ...rest
         } = this.props;
 
-        const itemCount = dataSource.size();
-        let stateItemCount = this.state.itemCount;
+        let itemCount = dataSource.size();
+        let dataCount = itemCount;
 
         let body = [];//item集合
 
-        if (ListHeaderComponent) {
-            var headerElement = React.isValidElement(ListHeaderComponent)
-                ? ListHeaderComponent
-                : <ListHeaderComponent/>;
-        }
-
-        if (ListFooterComponent) {
-            var footerElement = React.isValidElement(ListFooterComponent)
-                ? ListFooterComponent
-                : <ListFooterComponent/>;
-        }
-
-        if (ItemSeparatorComponent) {
-            var separatorElement = React.isValidElement(ItemSeparatorComponent)
-                ? ItemSeparatorComponent
-                : <ItemSeparatorComponent/>;
-        }
-
-        if (itemCount > 0) {
-            for (let i = 0; i < itemCount; i++) {
+        if (dataCount > 0 && renderItem) {
+            if (ListHeaderComponent) {
+                itemCount = dataCount + 1;
+                body.push(
+                <RecyclerViewHeader
+                style={styles.absolute}
+                renderItem={ListHeaderComponent}/>,
+            );
+            }
+            for (let i = 0; i < dataCount; i++) {
                 let item = dataSource.get(i);
                 let itemKey = dataSource.getKey(item, i);
                 let shouldUpdate = this._needsItemUpdate(itemKey);
@@ -161,40 +157,55 @@ export default class RNRecyclerView extends PureComponent {
                 itemIndex={i}
                 shouldUpdate={shouldUpdate}
                 dataSource={dataSource}
-                renderItem={renderItem}
-                header={headerElement}
-                separator={separatorElement}
-                footer={footerElement}/>,
+                renderItem={renderItem}/>,
             );
             }
-        } else if (ListEmptyComponent) {
-            const emptyElement = React.isValidElement(ListEmptyComponent)
-                ? ListEmptyComponent
-                : <ListEmptyComponent/>;
+            if (ListFooterComponent) {
+                itemCount++;
+                body.push(
+                <RecyclerViewFooter
+                style={styles.absolute}
+                renderItem={ListFooterComponent}/>,
+            );
+            }
+        } else {
+            if (ListHeaderComponent) {
+                itemCount++;
+                body.push(
+                <RecyclerViewHeader
+                style={styles.absolute}
+                renderItem={ListHeaderComponent}/>,
+            );
+            }
+            if (ListEmptyComponent) {
+                itemCount++;
+                body.push(
+                <RecyclerViewEmpty
+                style={styles.absolute}
+                renderItem={ListEmptyComponent}/>,
+            );
+            }
 
-            body.push(
-            <RecyclerViewItem
-            style={styles.absolute}
-            key="$empty"
-            itemIndex={0}
-            shouldUpdate={true}
-            dataSource={dataSource}
-            renderItem={() => emptyElement}
-            header={headerElement}
-            footer={footerElement}/>,
-        );
-
-            stateItemCount = 1;
+            if (ListFooterComponent) {
+                itemCount++;
+                body.push(
+                <RecyclerViewFooter
+                style={styles.absolute}
+                renderItem={ListFooterComponent}/>,
+            );
+            }
         }
+
 
         return (
             <NativeRecyclerView
-        layoutManager={layoutManager}
+        layoutType={layoutType}
+        inverted={inverted}
         onBottom={this._onBottom}
         onLoadMore={this._onLoadMore}
         onTop={this._onTop}
         {...rest}
-        itemCount={stateItemCount}>
+        itemCount={itemCount}>
             {body}
             </NativeRecyclerView>
     );
@@ -297,11 +308,18 @@ export default class RNRecyclerView extends PureComponent {
     _setLayoutManager(data) {
         UIManager.dispatchViewManagerCommand(
             ReactNative.findNodeHandle(this),
-            UIManager.AndroidRecyclerViewBackedScrollView.Commands.layoutManager.toString(),
+            UIManager.AndroidRecyclerViewBackedScrollView.Commands.layoutType.toString(),
             data,
         );
     }
 
+    _setReverse(inverted) {
+        UIManager.dispatchViewManagerCommand(
+            ReactNative.findNodeHandle(this),
+            UIManager.AndroidRecyclerViewBackedScrollView.Commands.inverted.toString(),
+            [inverted],
+        );
+    }
 }
 
 const nativeOnlyProps = {

@@ -1,27 +1,20 @@
 import {requireNativeComponent, ViewPropTypes} from "react-native";
 import PropTypes from "prop-types";
 import React, {Component} from "react";
-
+import DataSource from './DataSource';
 
 export default class RecyclerViewItem extends Component {
     static propTypes = {
         style: ViewPropTypes.style,
         itemIndex: PropTypes.number,
         shouldUpdate: PropTypes.bool,
-        dataSource: PropTypes.object,
+        dataSource: PropTypes.instanceOf(DataSource),
         renderItem: PropTypes.func,
-        header: PropTypes.any,
-        separator: PropTypes.any,
-        footer: PropTypes.any
     };
 
     shouldComponentUpdate(nextProps) {
         return !!((nextProps.itemIndex !== this.props.itemIndex) ||
-            (nextProps.header !== this.props.header) ||
-            (nextProps.footer !== this.props.footer) ||
-            (nextProps.separator !== this.props.separator) ||
             (nextProps.shouldUpdate));
-
     }
 
     render() {

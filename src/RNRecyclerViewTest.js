@@ -1,10 +1,13 @@
 import React, {Component} from 'react';
-import {Button, Image, NativeModules, StyleSheet, Text, View} from 'react-native';
+import {Button, Image, StyleSheet, Text, View} from 'react-native';
 
-import {RNRecyclerView} from './RNRecyclerView';
+import RNRecyclerView from './RNRecyclerView';
+import {LayoutType} from './LayoutType';
 import DataSource from './DataSource';
 
 let _gCounter = 1;
+
+const layoutArray = [LayoutType.grid, 2, 4];
 
 function newItem() {
     return {
@@ -28,29 +31,16 @@ export default class RNRecyclerViewTest extends Component {
     }
 
     render() {
-        const {dataSource} = this.state;
+        const {dataSource,inverted} = this.state;
 
         return (
             <View style={styles.container}>
-                {/*<TouchableNativeFeedback*/}
-                {/*    onPress={()=>this.addToBottom(20)}>*/}
-                {/*    <View style={{*/}
-                {/*        borderBottomWidth: 0,*/}
-                {/*        borderColor: '#e7e7e7',*/}
-                {/*        marginHorizontal: 5,*/}
-                {/*        marginVertical: 5,*/}
-                {/*    }}>*/}
-                {/*        <Text style={{*/}
-                {/*            fontSize: 14,*/}
-                {/*            color: 'black',*/}
-                {/*        }}>加载20条数据</Text>*/}
-                {/*    </View>*/}
-                {/*</TouchableNativeFeedback>*/}
 
                 {this.renderTopControlPanel()}
+                {this.renderTopControlPanel2()}
 
                 <RNRecyclerView
-                    layoutManager={[102, 2, 4]}
+                    layoutType={layoutArray}
                     onBottom={this.onBottom}
                     onLoadMore={this.onLoadMore}
                     onTop={this.onTop}
@@ -58,26 +48,11 @@ export default class RNRecyclerViewTest extends Component {
                     style={{flex: 1}}
                     dataSource={dataSource}
                     renderItem={this.renderItem}
+                    inverted={inverted}
+                    ListHeaderComponent={header()}
+                    ListFooterComponent={footer()}
+                    ListEmptyComponent={empty()}
 
-                    // ListHeaderComponent={(
-                    //     <View style={{paddingTop: 15, backgroundColor: '#eee'}}/>
-                    // )}
-                    // ListFooterComponent={(
-                    //     <View style={{paddingTop: 15, backgroundColor: '#aaa'}}/>
-                    // )}
-                    // ListEmptyComponent={(
-                    //     <View style={{borderColor: '#e7e7e7', borderWidth: 1, margin: 10, padding: 20}}>
-                    //         <Text style={{fontSize: 15}}>No results.</Text>
-                    //     </View>
-                    // )}
-                    // ItemSeparatorComponent={(
-                    //     <View style={{
-                    //         borderBottomWidth: 1,
-                    //         borderColor: '#e7e7e7',
-                    //         marginHorizontal: 5,
-                    //         marginVertical: 5,
-                    //     }}/>
-                    // )}
                 />
             </View>
         );
@@ -129,6 +104,58 @@ export default class RNRecyclerViewTest extends Component {
         );
     }
 
+    renderTopControlPanel2() {
+        return (
+            <View style={{
+            flexDirection: 'row',
+                padding: 5,
+                zIndex: 10,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#e7e7e7',
+            }}>
+                <Button
+                    title={'反转'}
+                    onPress={() => this.inverted()}/>
+                <View style={{width: 10}}/>
+
+                <Button
+                    title={'置空'}
+                    onPress={() => this.clear()}/>
+                <View style={{width: 10}}/>
+
+                <Button
+                    title={'数据变空'}
+                    onPress={() => this.empty()}/>
+                <View style={{width: 10}}/>
+
+            </View>
+        );
+    }
+
+    inverted() {
+        this.setState({
+            inverted: !this.state.inverted,
+        });
+    }
+
+    empty() {
+        this.state.dataSource.splice(0, this.state.dataSource.size());
+        this._recycler._setLayoutManager(layoutArray);//重新设置layoutManager可解决刷新问题
+    }
+
+    clear() {
+        if (this.state.dataSource.size() === 0) {
+            return;
+        }
+        this._recycler._setLayoutManager(layoutArray);//重新设置layoutManager可解决刷新问题
+        this.setState({
+            dataSource: new DataSource([], (item, index) => item.id),
+            inverted: false,
+        });
+
+    }
+
     onBottom() {
         // NativeModules.CommonModule.show('~~~~到底了~~~~');
     }
@@ -142,10 +169,8 @@ export default class RNRecyclerViewTest extends Component {
     }
 
     reset(size) {
-        // this._recycler.scrollToTop();
         const data = Array(size).fill().map((e, i) => newItem());
-        this._recycler._setLayoutManager([102, 2, 4]);//重新设置layoutManager可解决刷新问题
-        // this.state.dataSource.splice(0, this.state.dataSource.size(), ...data);
+        this._recycler._setLayoutManager(layoutArray);//重新设置layoutManager可解决刷新问题
         this.setState({
             dataSource: new DataSource(data, (item, i) => item.id),
         });
@@ -208,6 +233,36 @@ export default class RNRecyclerViewTest extends Component {
     }
 }
 
+const header = () => {
+    return <View style={{
+        alignItems: 'center',
+        borderColor: '#ff0000',
+        borderWidth: 1,
+    }}>
+        <Text style={{fontSize: 15}}>header...</Text>
+    </View>;
+};
+
+const empty = () => {
+    return <View style={{
+        alignItems: 'center',
+        borderColor: '#ff0000',
+        borderWidth: 1,
+    }}>
+        <Text style={{fontSize: 15}}>empty...</Text>
+    </View>;
+};
+
+const footer = () => {
+    return <View style={{
+        alignItems: 'center',
+        borderColor: '#ff0000',
+        borderWidth: 1,
+    }}>
+        <Text style={{fontSize: 15}}>footer...</Text>
+    </View>;
+};
+
 class Item extends Component {
     render() {
         const {item, index, onRemove, onAddAbove, onAddBelow, onMoveUp, onMoveDown, onIncrementCounter, dataSource} = this.props;
@@ -216,8 +271,7 @@ class Item extends Component {
         const imageHeight = 70 + (index % 5 === 2 ? 20 : 0);
 
         return (
-            // <TouchableNativeFeedback
-            //     onPress={onIncrementCounter}>
+
             <View style={{flexDirection: 'row', alignItems: 'center', marginHorizontal: 5, marginVertical: 5}}>
                 <Image
                     source={{uri: 'http://loremflickr.com/320/240?t=' + (id % 9)}}
@@ -249,7 +303,7 @@ class Item extends Component {
                     marginVertical: 5,
                 }}/>
             </View>
-            // </TouchableNativeFeedback>
+
         );
     }
 }
