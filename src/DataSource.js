@@ -78,6 +78,10 @@ export default class DataSource {
         });
     }
 
+    position(item) {
+        return this._data.indexOf(item);
+    }
+
     get(index) {
         return this._data[index];
     }

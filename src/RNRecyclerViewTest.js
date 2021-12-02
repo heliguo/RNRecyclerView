@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Button, Image, StyleSheet, Text, View} from 'react-native';
+import {Button, Image, StyleSheet, Text, View,ToastAndroid,TouchableNativeFeedback} from 'react-native';
 
 import RNRecyclerView from './RNRecyclerView';
 import {LayoutType} from './LayoutType';
@@ -58,17 +58,17 @@ export default class RNRecyclerViewTest extends Component {
         );
     }
 
-    renderItem = ({item, index}) => {
+    renderItem = ({item}) => {
         return (
             <Item
                 item={item}
-                index={index}
-                onRemove={() => this.remove(index)}
-                onAddAbove={() => this.addAbove(index)}
-                onMoveUp={() => this.moveUp(index)}
-                onMoveDown={() => this.moveDown(index)}
-                onAddBelow={() => this.addBelow(index)}
-                onIncrementCounter={() => this.incrementCounter(index)}
+                index={this.state.dataSource.position(item)}
+                onRemove={() => this.remove(this.state.dataSource.position(item))}
+                onAddAbove={() => this.addAbove(this.state.dataSource.position(item))}
+                onMoveUp={() => this.moveUp(this.state.dataSource.position(item))}
+                onMoveDown={() => this.moveDown(this.state.dataSource.position(item))}
+                onAddBelow={() => this.addBelow(this.state.dataSource.position(item))}
+                onIncrementCounter={() => this.incrementCounter(this.state.dataSource.position(item))}
                 dataSource={this.state.dataSource}/>
         );
     };
@@ -207,9 +207,7 @@ export default class RNRecyclerViewTest extends Component {
     }
 
     incrementCounter(index) {
-        let item = this.state.dataSource.get(index);
-        item.counter++;
-        this.state.dataSource.set(index, item);
+        ToastAndroid.showWithGravity('你点击了第' + index + '条数据图片', ToastAndroid.SHORT, ToastAndroid.CENTER);
     }
 
     moveUp(index) {
@@ -239,7 +237,7 @@ const header = () => {
         borderColor: '#ff0000',
         borderWidth: 1,
     }}>
-        <Text style={{fontSize: 15}}>header...</Text>
+        <Text style={{fontSize: 15}}>图片可点击</Text>
     </View>;
 };
 
@@ -273,13 +271,16 @@ class Item extends Component {
         return (
 
             <View style={{flexDirection: 'row', alignItems: 'center', marginHorizontal: 5, marginVertical: 5}}>
-                <Image
-                    source={{uri: 'http://loremflickr.com/320/240?t=' + (id % 9)}}
-                    style={{
-                        width: imageWidth,
-                        height: imageHeight,
-                        marginRight: 10,
-                    }}/>
+                <TouchableNativeFeedback
+                    onPress={onIncrementCounter}>
+                    <Image
+                        source={{uri: 'http://loremflickr.com/320/240?t=' + (id % 9)}}
+                        style={{
+                            width: imageWidth,
+                            height: imageHeight,
+                            marginRight: 10,
+                        }}/>
+                </TouchableNativeFeedback>
                 <View style={{flex: 1}}>
                     <Text style={{
                         fontSize: 16,
