@@ -44,10 +44,10 @@ export default class RNRecyclerView extends PureComponent {
         this._shouldUpdateKeys = [];
     }
 
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
     }
 
-    componentWillUnmount() {
+    UNSAFE_componentWillUnmount() {
         const {dataSource} = this.props;
         this.mounted = false;
         if (dataSource) {
@@ -55,11 +55,11 @@ export default class RNRecyclerView extends PureComponent {
         }
     }
 
-    componentDidMount() {
+    UNSAFE_componentDidMount() {
         this.mounted = true;
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         const {dataSource} = this.props;
         if (nextProps.dataSource.size() === 0 && dataSource.size === 0) {
             return;
@@ -71,7 +71,7 @@ export default class RNRecyclerView extends PureComponent {
         }
     }
 
-    componentDidUpdate(prevProps, prevState) {
+    UNSAFE_componentDidUpdate(prevProps, prevState) {
         this._shouldUpdateAll = false;
         this._shouldUpdateKeys = [];
     }
@@ -152,7 +152,6 @@ export default class RNRecyclerView extends PureComponent {
                 let shouldUpdate = this._needsItemUpdate(itemKey);
                 body.push(
                 <RecyclerViewItem
-                key={itemKey}
                 style={styles.absolute}
                 itemIndex={i}
                 shouldUpdate={shouldUpdate}

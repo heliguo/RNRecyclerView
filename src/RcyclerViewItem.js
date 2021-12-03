@@ -7,7 +7,7 @@ export default class RecyclerViewItem extends Component {
     static propTypes = {
         style: ViewPropTypes.style,
         itemIndex: PropTypes.number,
-        shouldUpdate: PropTypes.bool,
+        shouldUpdate:PropTypes.bool,
         dataSource: PropTypes.instanceOf(DataSource),
         renderItem: PropTypes.func,
     };
@@ -18,20 +18,14 @@ export default class RecyclerViewItem extends Component {
     }
 
     render() {
-        const {style, itemIndex, dataSource, renderItem, header, separator, footer} = this.props;
-        let element = renderItem({
-            item: dataSource.get(itemIndex),
-            index: itemIndex
-        });
+        const {style, itemIndex, dataSource, renderItem} = this.props;
+        let element = renderItem(dataSource.get(itemIndex), itemIndex);
 
         return (
             <NativeRecyclerViewItem
                 style={style}
                 itemIndex={itemIndex}>
-                {header}
                 {element}
-                {separator}
-                {footer}
             </NativeRecyclerViewItem>
         );
     }

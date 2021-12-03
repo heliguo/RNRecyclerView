@@ -58,17 +58,17 @@ export default class RNRecyclerViewTest extends Component {
         );
     }
 
-    renderItem = ({item}) => {
+    renderItem = (item,index) => {
         return (
             <Item
                 item={item}
-                index={this.state.dataSource.position(item)}
-                onRemove={() => this.remove(this.state.dataSource.position(item))}
-                onAddAbove={() => this.addAbove(this.state.dataSource.position(item))}
-                onMoveUp={() => this.moveUp(this.state.dataSource.position(item))}
-                onMoveDown={() => this.moveDown(this.state.dataSource.position(item))}
-                onAddBelow={() => this.addBelow(this.state.dataSource.position(item))}
-                onIncrementCounter={() => this.incrementCounter(this.state.dataSource.position(item))}
+                index={index}
+                onRemove={() => this.remove(index)}
+                onAddAbove={() => this.addAbove(index)}
+                onMoveUp={() => this.moveUp(index)}
+                onMoveDown={() => this.moveDown(index)}
+                onAddBelow={() => this.addBelow(index)}
+                onIncrementCounter={() => this.incrementCounter(index)}
                 dataSource={this.state.dataSource}/>
         );
     };
@@ -128,6 +128,10 @@ export default class RNRecyclerViewTest extends Component {
                     title={'数据变空'}
                     onPress={() => this.empty()}/>
                 <View style={{width: 10}}/>
+                <Button
+                    title={'更新第一条数据'}
+                    onPress={() => this.updateFirst()}/>
+                <View style={{width: 10}}/>
 
             </View>
         );
@@ -137,6 +141,10 @@ export default class RNRecyclerViewTest extends Component {
         this.setState({
             inverted: !this.state.inverted,
         });
+    }
+
+    updateFirst(){
+        this.state.dataSource.set(0,newItem());
     }
 
     empty() {
@@ -208,6 +216,9 @@ export default class RNRecyclerViewTest extends Component {
 
     incrementCounter(index) {
         ToastAndroid.showWithGravity('你点击了第' + index + '条数据图片', ToastAndroid.SHORT, ToastAndroid.CENTER);
+        let item = this.state.dataSource.get(index);
+        item.counter++;
+        this.state.dataSource.set(index, item);
     }
 
     moveUp(index) {
@@ -274,7 +285,7 @@ class Item extends Component {
                 <TouchableNativeFeedback
                     onPress={onIncrementCounter}>
                     <Image
-                        source={{uri: 'http://loremflickr.com/320/240?t=' + (id % 9)}}
+                        source={{uri: 'http://loremflickr.com/320/240?t=' + (index % 9)}}
                         style={{
                             width: imageWidth,
                             height: imageHeight,

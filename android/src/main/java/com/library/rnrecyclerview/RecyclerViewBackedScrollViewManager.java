@@ -21,7 +21,6 @@ import com.library.rnrecyclerview.event.ContentSizeChangeEvent;
 import com.library.rnrecyclerview.event.ItemLoadBottomEvent;
 import com.library.rnrecyclerview.event.ItemLoadChangeEvent;
 import com.library.rnrecyclerview.event.ItemTopEvent;
-import com.library.rnrecyclerview.event.VisibleItemsChangeEvent;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -202,7 +201,7 @@ public class RecyclerViewBackedScrollViewManager extends ViewGroupManager<Recycl
                 RecyclerViewBackedScrollView.ReactListAdapter adapter = (RecyclerViewBackedScrollView.ReactListAdapter) parent.getAdapter();
                 assert adapter != null;
                 adapter.setItemCount(itemCount);
-                parent.getAdapter().notifyDataSetChanged();
+                adapter.notifyDataSetChanged();
                 return;
             }
 
@@ -246,7 +245,6 @@ public class RecyclerViewBackedScrollViewManager extends ViewGroupManager<Recycl
                 .put(ItemLoadChangeEvent.EVENT_LOAD_MORE, MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onLoadMore")))
                 .put(ContentSizeChangeEvent.EVENT_NAME, MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onContentSizeChange")))
                 .put(ItemTopEvent.EVENT_TOP, MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onTop")))
-                .put(VisibleItemsChangeEvent.EVENT_NAME, MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onVisibleItemsChange")))
                 .build();
     }
 

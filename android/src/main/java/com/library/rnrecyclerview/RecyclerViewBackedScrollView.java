@@ -31,7 +31,6 @@ import com.library.rnrecyclerview.R;
 import com.library.rnrecyclerview.event.ItemLoadBottomEvent;
 import com.library.rnrecyclerview.event.ItemLoadChangeEvent;
 import com.library.rnrecyclerview.event.ItemTopEvent;
-import com.library.rnrecyclerview.event.VisibleItemsChangeEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -366,25 +365,6 @@ public class RecyclerViewBackedScrollView extends RecyclerView {
                             computeVerticalScrollRange(),
                             getWidth(),
                             getHeight()));
-        }
-        LayoutManager layoutManager = getLayoutManager();
-        int firstIndex = 0;
-        int lastIndex = 0;
-        if (layoutManager instanceof LinearLayoutManager) {
-            ((LinearLayoutManager) layoutManager).findFirstVisibleItemPosition();
-        } else if (layoutManager instanceof StaggeredGridLayoutManager) {
-            int[] pos = ((StaggeredGridLayoutManager) getLayoutManager()).findLastVisibleItemPositions(null);
-            lastIndex = maxLastPosition(pos);
-        }
-        if (firstIndex != mFirstVisibleIndex || lastIndex != mLastVisibleIndex) {
-            nativeModule.getEventDispatcher()
-                    .dispatchEvent(new VisibleItemsChangeEvent(
-                            getId(),
-                            firstIndex,
-                            lastIndex));
-
-            mFirstVisibleIndex = firstIndex;
-            mLastVisibleIndex = lastIndex;
         }
     }
 
