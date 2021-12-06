@@ -256,13 +256,19 @@ public class RecyclerViewBackedScrollViewManager extends ViewGroupManager<Recycl
                 parent.setLoadMoreCount(args.getInt(1));
             }
         } else if (style == LAYOUT_MANAGER_GRID) {
-            int spanCount = args.getInt(1);
+            int spanCount = 1;
+            if(args.size() > 1){
+                spanCount = args.getInt(1);
+            }
             parent.setLayoutManager(new GridLayoutManager(parent.getContext(), spanCount));
             if (args.size() > 2) {
                 parent.setLoadMoreCount(args.getInt(2));
             }
         } else if (style == LAYOUT_MANAGER_STAGGERED) {
-            int spanCount = args.getInt(1);
+            int spanCount = 1;
+            if(args.size() > 1){
+                spanCount = args.getInt(1);
+            }
             StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(spanCount, StaggeredGridLayoutManager.VERTICAL);
             layoutManager.setGapStrategy(StaggeredGridLayoutManager.GAP_HANDLING_NONE);//瀑布流刷新头部空白问题
             parent.setLayoutManager(layoutManager);

@@ -1,8 +1,9 @@
 {
   "name": "react-native-rnrecyclerviews",
-  "version": "1.1.2",
+  "version": "1.1.5",
   "description": "RecyclerView",
   "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -25,5 +26,15 @@
     "url": "https://github.com/heliguo/RNRecyclerView/issues"
   },
   "homepage": "https://github.com/heliguo/RNRecyclerView#readme",
-  "devDependencies": {}
+  "devDependencies": {
+    "@types/jest": "^27.0.3",
+    "@types/react": "^17.0.37",
+    "@types/react-native": "^0.66.8",
+    "@types/react-test-renderer": "^17.0.1",
+    "typescript": "^4.5.2"
+  },
+  "dependencies": {
+    "@types/node": "^16.11.11",
+    "@types/react-dom": "^17.0.11"
+  }
 }

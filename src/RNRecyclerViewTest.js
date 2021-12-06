@@ -2,12 +2,11 @@ import React, {Component} from 'react';
 import {Button, Image, StyleSheet, Text, View,ToastAndroid,TouchableNativeFeedback} from 'react-native';
 
 import RNRecyclerView from './RNRecyclerView';
-import {LayoutType} from './LayoutType';
 import DataSource from './DataSource';
 
 let _gCounter = 1;
 
-const layoutArray = [LayoutType.grid, 2, 4];
+const layoutArray = [1, 2, 4];
 
 function newItem() {
     return {

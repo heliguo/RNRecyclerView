@@ -36,7 +36,7 @@ Look at the use case `RNRecyclerViewTest`
 
 Prop name             | Description   | Type      | Default| Example
 ----------------------|---------------|-----------|--------------|----------
-`layoutType`          | 1.设置LayoutManager(必传)<br/>2.设置spanCount<br/>3.设置loadMore回调条目数 | array | 必传 | 1.线性布局{LayoutType.linear}、{LayoutType.linear,4}<br/>2.网格布局{LayoutType.grid,2}、{LayoutType.grid,2,4}<br/>3.瀑布流{LayoutType.staggered,2}、{LayoutType.staggered,2,4}
+`layoutType`          | 1.设置LayoutManager(必传)<br/>2.设置spanCount<br/>3.设置loadMore回调条目数 | array | 必传 | 1.线性布局{0}、{0,4}<br/>2.网格布局{1,2}、{1,2,4}<br/>3.瀑布流{2,2}、{2,2,4}
 `dataSource`          | The datasource that contains the data to render | DataSource |  |
 `renderItem`          | 需要渲染的item | component |  |
 `inverted`            | inverted the list | bool |  |
